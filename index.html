@@ -3,174 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSI Trainer - Medycyna Ratunkowa</title>
+    <title>RSI Trainer - Pamięć Mięśniowa</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --success: #27ae60;
-            --error: #e74c3c;
-            --bg: #f4f7f6;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--primary); display: flex; justify-content: center; padding: 20px; }
-        .container { max-width: 600px; width: 100%; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { text-align: center; font-size: 1.5rem; margin-bottom: 20px; }
-        .setup-box { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
-        .step-card { border: 2px solid #3498db; padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        button { padding: 10px; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; background: #3498db; color: white; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-        button:disabled { background: #bdc3c7; cursor: not-allowed; }
-        .feedback { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; text-align: center; }
-        .progress { font-size: 0.8rem; color: #7f8c8d; text-align: right; }
-        .summary { text-align: center; display: none; }
+        :root { --primary: #2c3e50; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; }
+        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 10px; margin: 0; }
+        .container { max-width: 500px; width: 100%; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 20px; }
+        .setup-box, .step-card, .summary { display: none; }
+        .active { display: block; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        
+        /* Grid ułatwiający zapamiętywanie pozycji */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .options-grid button { margin: 0; height: 100%; min-height: 70px; background: #3498db; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.1s; }
+        .options-grid button:active { transform: scale(0.95); background: #2980b9; }
+        
+        .setup-box button, .summary button { background: var(--success); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .progress-bar { height: 8px; background: #eee; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--success); width: 0%; transition: 0.3s; }
+        .label-step { color: #7f8c8d; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Trenażer Procedury RSI</h1>
-    
-    <div id="setup" class="setup-box">
-        <label>Waga pacjenta (kg):</label>
-        <input type="number" id="weight" value="80" min="1" max="150">
+    <div id="setup" class="setup-box active">
+        <h2>Parametry Pacjenta</h2>
+        <label>Waga (kg):</label>
+        <input type="number" id="weight" value="80">
         <label>Typ pacjenta:</label>
-        <select id="type">
+        <select id="patient-type">
             <option value="adult">Dorosły</option>
-            <option value="pediatric">Dziecko</option>
+            <option value="child">Dziecko</option>
         </select>
-        <button onclick="startTraining()" style="width: 100%; background: var(--success);">Rozpocznij Procedurę</button>
+        <button onclick="startTraining()">ROZPOCZNIJ TRENING</button>
     </div>
 
-    <div id="game" style="display: none;">
-        <div class="progress">Krok: <span id="step-num">1</span>/7</div>
-        <div class="step-card">
-            <h3 id="step-title">Przygotowanie</h3>
-            <p id="step-desc">Wybierz odpowiednie działanie lub lek dla tego etapu:</p>
-            
-            <div id="action-options" class="options"></div>
-            <div id="dose-options" class="options" style="display: none;"></div>
-        </div>
-        <div id="feedback" class="feedback"></div>
+    <div id="game" class="step-card">
+        <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+        <div class="label-step" id="step-label">Krok 1 z 7</div>
+        <h3 id="step-title">Tytuł kroku</h3>
+        <p id="step-instruction">Wybierz właściwe działanie:</p>
+        <div id="options-container" class="options-grid"></div>
     </div>
 
     <div id="summary" class="summary">
-        <h2>Procedura Zakończona!</h2>
-        <p>Gratulacje, pacjent został bezpiecznie zaintubowany.</p>
-        <button onclick="location.reload()">Zacznij od nowa</button>
+        <h2 style="color: var(--success)">✓ Procedura zakończona</h2>
+        <p id="summary-stats"></p>
+        <button onclick="location.reload()">POWTÓRZ TRENING</button>
     </div>
 </div>
 
 <script>
-    const steps = [
-        { title: "1. Preparation (Przygotowanie)", correctAction: "Ssawka, Monitor, Dostęp IV", hasDose: false },
-        { title: "2. Preoxygenation (Preoksygenacja)", correctAction: "Bierna tlenoterapia 100% przez 3-5 min", hasDose: false },
-        { title: "3. Pretreatment (Przygotowanie wstępne)", correctAction: "Fentanyl", doseMg: 0.003, hasDose: true }, // 3 mcg/kg
-        { title: "4. Paralysis with Induction", correctAction: "Etomidat", doseMg: 0.3, hasDose: true },
-        { title: "5. Positioning (Pozycja)", correctAction: "Pozycja węszeniowa", hasDose: false },
-        { title: "6. Placement with proof", correctAction: "Intubacja i Kapnografia", hasDose: false },
-        { title: "7. Post-intubation management", correctAction: "Sedacja i wentylacja mechaniczna", hasDose: false }
-    ];
-
-    let currentStep = 0;
     let weight = 80;
+    let currentStep = 0;
+    let mistakes = 0;
 
-    const actionsPool = [
-        "Ssawka, Monitor, Dostęp IV", "Bierna tlenoterapia 100% przez 3-5 min", "Fentanyl", 
-        "Etomidat", "Pozycja węszeniowa", "Intubacja i Kapnografia", "Sedacja i wentylacja mechaniczna",
-        "Podanie Atropiny", "Uciskanie klatki piersiowej", "Głęboka sedacja propofolem"
+    // Pełna kontrola nad interfejsem – brak funkcji losujących
+    // Opcje zawsze pojawią się w kolejności: [Lewy Górny, Prawy Górny, Lewy Dolny, Prawy Dolny]
+    const protocol = [
+        { 
+            title: "1. Preparation (Przygotowanie)", 
+            action: "Ssawka, Monitor, Dostęp IV", 
+            options: ["Masaż serca", "Ssawka, Monitor, Dostęp IV", "Lidokaina", "Tlen 100% (3-5 min)"], 
+            needsDose: false 
+        },
+        { 
+            title: "2. Preoxygenation (Preoksygenacja)", 
+            action: "Tlen 100% (3-5 min)", 
+            options: ["Tlen 100% (3-5 min)", "Fentanyl", "Intubacja", "Defibrylacja"], 
+            needsDose: false 
+        },
+        { 
+            title: "3. Pretreatment (Przygotowanie)", 
+            action: "Fentanyl", 
+            options: ["Etomidat", "Rokuronium", "Fentanyl", "Propofol"], 
+            needsDose: true, 
+            unit: "mg", 
+            doseMultipliers: [0.001, 0.003, 0.01, 0.03], // Poprawna dawka to x0.003 (3 mcg/kg)
+            correctMultiplier: 0.003 
+        },
+        { 
+            title: "4. Paralysis with Induction", 
+            action: "Etomidat", 
+            options: ["Fentanyl", "Midazolam", "Rokuronium", "Etomidat"], 
+            needsDose: true, 
+            unit: "mg", 
+            doseMultipliers: [0.1, 0.3, 0.6, 1.0], // Poprawna dawka to x0.3
+            correctMultiplier: 0.3 
+        },
+        { 
+            title: "5. Paralysis (Zwiotczenie)", 
+            action: "Rokuronium", 
+            options: ["Sukcynylocholina", "Rokuronium", "Wekuronium", "Etomidat"], 
+            needsDose: true, 
+            unit: "mg", 
+            doseMultipliers: [0.6, 1.2, 2.0, 5.0], // Poprawna dawka to x1.2
+            correctMultiplier: 1.2 
+        },
+        { 
+            title: "6. Placement with proof", 
+            action: "Intubacja i EtCO2", 
+            options: ["Kontynuacja sedacji", "Intubacja i EtCO2", "Dostęp IV", "Podanie Atropiny"], 
+            needsDose: false 
+        },
+        { 
+            title: "7. Post-intubation care", 
+            action: "Sedacja i wentylacja", 
+            options: ["Tlen 100% (3-5 min)", "Rozkurcz oskrzeli", "Sedacja i wentylacja", "Ekstubacja"], 
+            needsDose: false 
+        }
     ];
 
     function startTraining() {
-        weight = document.getElementById('weight').value;
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('game').style.display = 'block';
+        weight = parseFloat(document.getElementById('weight').value);
+        document.getElementById('setup').classList.remove('active');
+        document.getElementById('game').classList.add('active');
         loadStep();
     }
 
     function loadStep() {
-        const step = steps[currentStep];
-        document.getElementById('step-num').innerText = currentStep + 1;
+        const step = protocol[currentStep];
+        document.getElementById('step-label').innerText = `Krok ${currentStep + 1} z ${protocol.length}`;
         document.getElementById('step-title').innerText = step.title;
-        const actionDiv = document.getElementById('action-options');
-        const doseDiv = document.getElementById('dose-options');
-        const feedback = document.getElementById('feedback');
+        document.getElementById('step-instruction').innerText = "Wybierz właściwe działanie:";
+        document.getElementById('progress').style.width = `${(currentStep / protocol.length) * 100}%`;
         
-        feedback.style.display = 'none';
-        doseDiv.style.display = 'none';
-        actionDiv.innerHTML = '';
-        
-        // Tasowanie opcji działań (uproszczone)
-        const shuffledActions = [...actionsPool].sort(() => 0.5 - Math.random());
-        // Upewnij się, że poprawna odpowiedź jest w puli
-        if(!shuffledActions.includes(step.correctAction)) shuffledActions[0] = step.correctAction;
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
 
-        shuffledActions.slice(0, 4).forEach(action => {
+        // Renderowanie stałej listy opcji z tablicy "options"
+        step.options.forEach(choice => {
             const btn = document.createElement('button');
-            btn.innerText = action;
-            btn.onclick = () => checkAction(action);
-            actionDiv.appendChild(btn);
+            btn.innerText = choice;
+            btn.onclick = () => checkAction(choice);
+            container.appendChild(btn);
         });
     }
 
     function checkAction(selected) {
-        const step = steps[currentStep];
-        const feedback = document.getElementById('feedback');
-        
-        if (selected === step.correctAction) {
-            if (step.hasDose) {
-                showDoseOptions(step);
+        const step = protocol[currentStep];
+        if (selected === step.action) {
+            if (step.needsDose) {
+                loadDoseStage(step);
             } else {
                 nextStep();
             }
         } else {
-            showFeedback("Błędna kolejność! Spróbuj ponownie.", "var(--error)");
+            mistakes++;
+            alert("BŁĄD! Pamiętaj o właściwej kolejności protokołu 7P.");
         }
     }
 
-    function showDoseOptions(step) {
-        const doseDiv = document.getElementById('dose-options');
-        const actionDiv = document.getElementById('action-options');
-        actionDiv.innerHTML = '<p><b>Dobra akcja! Teraz wybierz dawkę:</b></p>';
-        doseDiv.innerHTML = '';
-        doseDiv.style.display = 'grid';
+    function loadDoseStage(step) {
+        document.getElementById('step-instruction').innerText = `Wybierz prawidłową dawkę dla leku: ${step.action} (waga: ${weight} kg)`;
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
 
-        const correctDose = (step.doseMg * weight).toFixed(1);
-        const doses = [
-            correctDose,
-            (correctDose * 0.5).toFixed(1),
-            (correctDose * 2).toFixed(1),
-            (Math.random() * 100).toFixed(1)
-        ].sort(() => 0.5 - Math.random());
+        // Renderowanie stałej listy dawek z tablicy "doseMultipliers"
+        step.doseMultipliers.forEach(mult => {
+            // Obliczenia przeliczające mnożnik i wagę, parseFloat usuwa zbędne zera po przecinku
+            const doseVal = parseFloat((mult * weight).toFixed(3));
+            const correctVal = parseFloat((step.correctMultiplier * weight).toFixed(3));
 
-        doses.forEach(dose => {
             const btn = document.createElement('button');
-            btn.innerText = dose + " mg";
+            btn.innerText = `${doseVal} ${step.unit}`;
             btn.onclick = () => {
-                if (dose === correctDose) nextStep();
-                else showFeedback("Zła dawka! Przelicz jeszcze raz.", "var(--error)");
+                if(doseVal === correctVal) {
+                    nextStep();
+                } else { 
+                    mistakes++; 
+                    alert(`Zła dawka! Prawidłowa dla pacjenta ${weight} kg to ${correctVal} ${step.unit}`); 
+                }
             };
-            doseDiv.appendChild(btn);
+            container.appendChild(btn);
         });
-    }
-
-    function showFeedback(text, color) {
-        const f = document.getElementById('feedback');
-        f.innerText = text;
-        f.style.background = color;
-        f.style.color = "white";
-        f.style.display = "block";
     }
 
     function nextStep() {
         currentStep++;
-        if (currentStep < steps.length) {
+        if (currentStep < protocol.length) {
             loadStep();
         } else {
-            document.getElementById('game').style.display = 'none';
-            document.getElementById('summary').style.display = 'block';
+            showSummary();
         }
+    }
+
+    function showSummary() {
+        document.getElementById('progress').style.width = `100%`;
+        document.getElementById('game').classList.remove('active');
+        document.getElementById('summary').classList.add('active');
+        document.getElementById('summary-stats').innerText = `Błędy popełnione podczas procedury: ${mistakes}`;
     }
 </script>
 
