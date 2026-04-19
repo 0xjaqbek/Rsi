@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RSI Trainer</title>
+</head>
+<body>
+  <main>
+    <h1>RSI Trainer</h1>
+
+    <section>
+      <button id="nextCaseBtn">Następny przypadek</button>
+      <button id="showAnswerBtn">Pokaż odpowiedź</button>
+      <button id="resetBtn">Reset</button>
+    </section>
+
+    <section>
+      <h2>Pacjent</h2>
+      <div id="caseInfo"></div>
+    </section>
+
+    <section>
+      <h2>Kolejność działań</h2>
+      <ol id="stepList"></ol>
+      <button id="checkStepsBtn">Sprawdź kolejność</button>
+      <div id="stepResult"></div>
+    </section>
+
+    <section>
+      <h2>Leki i dawki</h2>
+      <form id="drugForm"></form>
+      <button id="checkDrugsBtn" type="button">Sprawdź dawki</button>
+      <div id="drugResult"></div>
+    </section>
+
+    <section>
+      <h2>Odpowiedź</h2>
+      <pre id="answerBox"></pre>
+    </section>
+  </main>
+
+  <script src="cases.json"></script>
+  <script src="app.js"></script>
+</body>
+</html>
