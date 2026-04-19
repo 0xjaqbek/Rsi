@@ -1,4 +1,6 @@
 let currentCase = null;
+let mode = "learn";
+let chosenSteps = [];
 
 const caseInfo = document.getElementById("caseInfo");
 const stepList = document.getElementById("stepList");
@@ -12,10 +14,12 @@ const showAnswerBtn = document.getElementById("showAnswerBtn");
 const resetBtn = document.getElementById("resetBtn");
 const checkStepsBtn = document.getElementById("checkStepsBtn");
 const checkDrugsBtn = document.getElementById("checkDrugsBtn");
+const modeBtn = document.getElementById("modeBtn");
 
 function pickCase() {
   const i = Math.floor(Math.random() * window.RSI_CASES.length);
   currentCase = window.RSI_CASES[i];
+  chosenSteps = [];
   renderCase();
 }
 
@@ -28,18 +32,57 @@ function renderCase() {
     <p><strong>Masa:</strong> ${currentCase.weight} kg</p>
     <p><strong>Stan:</strong> ${currentCase.presentation}</p>
     <p><strong>Zadanie:</strong> ${currentCase.goal}</p>
+    <p><strong>Tryb:</strong> ${mode === "learn" ? "nauka" : "egzamin"}</p>
   `;
 
   stepList.innerHTML = "";
+
+  const chosenBox = document.createElement("div");
+  chosenBox.innerHTML = "<h3>Twoja sekwencja</h3>";
+  const chosenOl = document.createElement("ol");
+  chosenOl.id = "chosenSteps";
+  chosenBox.appendChild(chosenOl);
+
+  const availableBox = document.createElement("div");
+  availableBox.innerHTML = "<h3>Dostępne czynności</h3>";
+  const availableOl = document.createElement("ol");
+
   currentCase.steps.forEach((step, idx) => {
+    if (chosenSteps.includes(idx)) return;
+
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = step;
+    btn.addEventListener("click", () => {
+      chosenSteps.push(idx);
+      renderCase();
+    });
+    li.appendChild(btn);
+    availableOl.appendChild(li);
+  });
+
+  availableBox.appendChild(availableOl);
+
+  stepList.appendChild(chosenBox);
+  stepList.appendChild(availableBox);
+
+  const chosenOlNode = document.getElementById("chosenSteps");
+  chosenSteps.forEach((stepIdx, pos) => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <label>
-        <input type="checkbox" data-step="${idx}">
-        ${step}
-      </label>
+      ${currentCase.steps[stepIdx]}
+      <button type="button" data-remove="${stepIdx}">Usuń</button>
     `;
-    stepList.appendChild(li);
+    chosenOlNode.appendChild(li);
+  });
+
+  chosenOlNode.querySelectorAll("[data-remove]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.getAttribute("data-remove"), 10);
+      chosenSteps = chosenSteps.filter(v => v !== idx);
+      renderCase();
+    });
   });
 
   drugForm.innerHTML = "";
@@ -62,16 +105,14 @@ function renderCase() {
 }
 
 function checkSteps() {
-  const checked = [...document.querySelectorAll('[data-step]')]
-    .map((el, idx) => el.checked ? idx : null)
-    .filter(v => v !== null);
-
   const expected = currentCase.steps.map((_, idx) => idx);
-  const ok = checked.length === expected.length && checked.every((v, i) => v === expected[i]);
+  const ok =
+    chosenSteps.length === expected.length &&
+    chosenSteps.every((v, i) => v === expected[i]);
 
   stepResult.textContent = ok
     ? "Kolejność poprawna."
-    : "Kolejność niepoprawna. Sprawdź algorytm.";
+    : `Kolejność niepoprawna. Wybrałeś: ${chosenSteps.map(i => currentCase.steps[i]).join(" → ")}`;
 }
 
 function calcDose(drug) {
@@ -90,14 +131,13 @@ function checkDrugs() {
     const drug = currentCase.drugs[idx];
     const expected = calcDose(drug);
     const user = parseFloat(input.value);
-
     const tol = drug.toleranceMg ?? 0.5;
     const ok = !Number.isNaN(user) && Math.abs(user - expected) <= tol;
 
     if (!ok) allOk = false;
 
     const hint = document.getElementById(`drugHint${idx}`);
-    hint.textContent = `Poprawna dawka: ${expected} mg`;
+    hint.textContent = mode === "learn" ? `Poprawna dawka: ${expected} mg` : "";
 
     out.push(`${drug.name}: ${ok ? "OK" : "BŁĄD"} (Twoja: ${user || "-"}, poprawna: ${expected} mg)`);
   });
@@ -110,10 +150,10 @@ function checkDrugs() {
 
 function showAnswer() {
   if (!currentCase) return;
-  const doses = currentCase.drugs.map(d => {
-    const dose = calcDose(d);
-    return `${d.name}: ${dose} mg`;
-  }).join("
+
+  const doses = currentCase.drugs
+    .map(d => `${d.name}: ${calcDose(d)} mg`)
+    .join("
 ");
 
   answerBox.textContent =
@@ -126,7 +166,12 @@ ${doses}`;
 }
 
 function resetAll() {
-  if (!currentCase) return;
+  chosenSteps = [];
+  renderCase();
+}
+
+function toggleMode() {
+  mode = mode === "learn" ? "exam" : "learn";
   renderCase();
 }
 
@@ -135,5 +180,6 @@ showAnswerBtn.addEventListener("click", showAnswer);
 resetBtn.addEventListener("click", resetAll);
 checkStepsBtn.addEventListener("click", checkSteps);
 checkDrugsBtn.addEventListener("click", checkDrugs);
+modeBtn.addEventListener("click", toggleMode);
 
 pickCase();
