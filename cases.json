@@ -1,0 +1,68 @@
+window.RSI_CASES = [
+  {
+    "title": "Dorosły pacjent: sepsa i niewydolność oddechowa",
+    "age": "42 lata",
+    "weight": 78,
+    "presentation": "Hipotensja, duszność, splątanie, narastająca niewydolność oddechowa.",
+    "goal": "Wykonaj RSI w poprawnej kolejności i policz dawki leków.",
+    "steps": [
+      "Ocena sytuacji i wezwanie pomocy",
+      "Przygotowanie sprzętu i leków",
+      "Preoksygenacja",
+      "Podanie leku indukcyjnego",
+      "Podanie leku zwiotczającego",
+      "Intubacja",
+      "Potwierdzenie położenia rurki",
+      "Zabezpieczenie rurki i opieka po intubacji"
+    ],
+    "drugs": [
+      {
+        "name": "Ketamina",
+        "mgPerKg": 1.5,
+        "maxMg": 150,
+        "note": "lek indukcyjny",
+        "toleranceMg": 1
+      },
+      {
+        "name": "Rokuronium",
+        "mgPerKg": 1,
+        "maxMg": 100,
+        "note": "lek zwiotczający",
+        "toleranceMg": 1
+      }
+    ]
+  },
+  {
+    "title": "Dziecko: ciężka astma",
+    "age": "7 lat",
+    "weight": 22,
+    "presentation": "Świsty, duszność, zmęczenie oddechowe, słaba odpowiedź na leczenie wstępne.",
+    "goal": "Wykonaj RSI w poprawnej kolejności i policz dawki leków.",
+    "steps": [
+      "Ocena sytuacji i wezwanie pomocy",
+      "Przygotowanie sprzętu i leków",
+      "Preoksygenacja",
+      "Podanie leku indukcyjnego",
+      "Podanie leku zwiotczającego",
+      "Intubacja",
+      "Potwierdzenie położenia rurki",
+      "Zabezpieczenie rurki i opieka po intubacji"
+    ],
+    "drugs": [
+      {
+        "name": "Ketamina",
+        "mgPerKg": 1.5,
+        "maxMg": 100,
+        "note": "lek indukcyjny",
+        "toleranceMg": 0.5
+      },
+      {
+        "name": "Sukcynylocholina",
+        "mgPerKg": 1.5,
+        "maxMg": 150,
+        "note": "lek zwiotczający",
+        "toleranceMg": 0.5
+      }
+    ]
+  }
+];
