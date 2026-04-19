@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSI Trainer - 7P Protocol</title>
+    <title>RSI Trainer - Master Edition</title>
     <style>
         :root { --primary: #2c3e50; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --text-muted: #7f8c8d; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 10px; margin: 0; color: var(--primary); }
@@ -11,27 +11,27 @@
         .setup-box, .step-card, .summary { display: none; }
         .active { display: block; }
         
-        /* Formularze i przyciski */
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
         button { background: #3498db; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.15s ease-in-out; }
         button:active { transform: scale(0.97); background: #2980b9; }
-        .btn-start { background: var(--success); font-size: 1.1rem; padding: 15px; margin-top: 15px; }
         
-        /* Typography i UI */
-        h2, h3 { margin-top: 0; }
+        .btn-start { background: var(--success); font-size: 1.1rem; padding: 15px; }
+        .btn-info { background: #95a5a6; font-size: 0.9rem; margin-top: 5px; }
+        
         #step-title { margin-bottom: 5px; font-size: 1.4rem; color: #2980b9; }
         #step-description { font-size: 0.95rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 20px; font-style: italic; background: #f8f9fa; padding: 10px; border-left: 4px solid #3498db; border-radius: 4px; }
-        #step-instruction { font-weight: bold; margin-bottom: 10px; }
         
-        /* Grid opcji */
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .options-grid button { margin: 0; height: 100%; min-height: 75px; background: #ecf0f1; color: var(--primary); border: 2px solid #bdc3c7; font-weight: 600; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; padding: 10px; line-height: 1.2; }
-        .options-grid button:active { transform: scale(0.95); background: #dfe6e9; border-color: #95a5a6; }
+        .options-grid button { margin: 0; min-height: 75px; background: #ecf0f1; color: var(--primary); border: 2px solid #bdc3c7; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 10px; line-height: 1.2; }
         
-        /* Progress */
         .progress-bar { height: 10px; background: #ecf0f1; border-radius: 5px; margin-bottom: 15px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--success); width: 0%; transition: 0.4s ease-out; }
-        .label-step { color: var(--text-muted); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .label-step { color: var(--text-muted); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; }
+
+        /* Styl ściągi */
+        #cheat-sheet { display: none; background: #fffde7; padding: 15px; border: 1px solid #fbc02d; border-radius: 6px; margin-top: 10px; font-size: 0.9rem; }
+        #cheat-sheet ul { padding-left: 20px; margin: 5px 0; }
+        #cheat-sheet li { margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -47,23 +47,34 @@
             <option value="child">Dziecko</option>
         </select>
         <button class="btn-start" onclick="startTraining()">ROZPOCZNIJ TRENING</button>
+        <button class="btn-info" onclick="toggleCheatSheet()">ℹ PRZYPOMNIJ PROCEDURĘ</button>
+        
+        <div id="cheat-sheet">
+            <strong>Protokół 7P:</strong>
+            <ul>
+                <li><strong>1. Preparation:</strong> Ssawka, Monitor, Dostęp IV</li>
+                <li><strong>2. Preoxygenation:</strong> Tlen 100% przez 3-5 min</li>
+                <li><strong>3. Pretreatment:</strong> Fentanyl (3 mcg/kg)</li>
+                <li><strong>4. Induction:</strong> Etomidat (0.3 mg/kg)</li>
+                <li><strong>5. Paralysis:</strong> Rokuronium (1.2 mg/kg)</li>
+                <li><strong>6. Placement:</strong> Intubacja i potwierdzenie EtCO2</li>
+                <li><strong>7. Post-intubation:</strong> Sedacja i wentylacja</li>
+            </ul>
+        </div>
     </div>
 
     <div id="game" class="step-card">
         <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
         <div class="label-step" id="step-label">Krok 1 z 7</div>
-        
         <h3 id="step-title">Tytuł kroku</h3>
-        <div id="step-description">Opis kroku...</div>
-        
-        <div id="step-instruction">Wybierz właściwe działanie:</div>
+        <div id="step-description">Opis...</div>
+        <div style="font-weight: bold; margin-bottom: 10px;">Wybierz właściwe działanie:</div>
         <div id="options-container" class="options-grid"></div>
     </div>
 
     <div id="summary" class="summary">
         <h2 style="color: var(--success)">✓ Procedura zakończona</h2>
-        <p>Protokół RSI został wykonany.</p>
-        <p id="summary-stats" style="font-weight: bold; font-size: 1.2rem;"></p>
+        <p id="summary-stats"></p>
         <button class="btn-start" onclick="location.reload()">POWTÓRZ TRENING</button>
     </div>
 </div>
@@ -76,21 +87,21 @@
     const protocol = [
         { 
             title: "1. Preparation", 
-            description: "Przygotowanie pacjenta, sprzętu i zespołu. Wymagane jest zapewnienie monitorowania (EKG, SpO2, NIBP), drożnego dostępu dożylnego (IV) oraz przygotowanie sprzętu ssącego i zestawu do intubacji.",
+            description: "Zapewnienie bezpieczeństwa procedury poprzez przygotowanie sprzętu ssącego, monitorowania parametrów życiowych oraz zabezpieczenie dostępu dożylnego.",
             action: "Ssawka, Monitor, Dostęp IV", 
             options: ["Masaż serca", "Ssawka, Monitor, Dostęp IV", "Lidokaina", "Tlen 100% (3-5 min)"], 
             needsDose: false 
         },
         { 
             title: "2. Preoxygenation", 
-            description: "Preoksygenacja. Celem jest zastąpienie azotu w płucach tlenem (denitrogenacja), co tworzy rezerwę tlenową i wydłuża czas bezpiecznego bezdechu podczas intubacji.",
+            description: "Maksymalne wysycenie hemoglobiny tlenem i denitrogenacja płuc, aby zminimalizować ryzyko niedotlenienia w fazie bezdechu.",
             action: "Tlen 100% (3-5 min)", 
             options: ["Tlen 100% (3-5 min)", "Fentanyl", "Intubacja", "Defibrylacja"], 
             needsDose: false 
         },
         { 
             title: "3. Pretreatment", 
-            description: "Przygotowanie farmakologiczne. Podanie leków łagodzących fizjologiczną odpowiedź na intubację (np. wzrost ciśnienia wewnątrzczaszkowego, tachykardia). Tutaj stosujemy Fentanyl w dawce 3 mcg/kg.",
+            description: "Podanie leków mających na celu osłabienie współczulnej odpowiedzi na intubację (tachykardia, wzrost ciśnienia). Wybierz odpowiedni środek przeciwbólowy.",
             action: "Fentanyl", 
             options: ["Etomidat", "Rokuronium", "Fentanyl", "Propofol"], 
             needsDose: true, 
@@ -100,7 +111,7 @@
         },
         { 
             title: "4. Paralysis with Induction", 
-            description: "Indukcja. Podanie szybko działającego leku nasennego, który powoduje natychmiastową utratę przytomności pacjenta. Stosujemy Etomidat (dawka 0.3 mg/kg).",
+            description: "Podanie leku wywołującego natychmiastową utratę przytomności (indukcja snu). Wybierz właściwy lek anestetyczny.",
             action: "Etomidat", 
             options: ["Fentanyl", "Midazolam", "Rokuronium", "Etomidat"], 
             needsDose: true, 
@@ -110,7 +121,7 @@
         },
         { 
             title: "5. Paralysis", 
-            description: "Zwiotczenie mięśni. Aplikacja leku zwiotczającego natychmiast po leku indukującym, aby umożliwić rozluźnienie strun głosowych i bezurazową intubację. Podajemy Rokuronium (dawka 1.2 mg/kg).",
+            description: "Blokada nerwowo-mięśniowa w celu umożliwienia optymalnej wizualizacji krtani i uniknięcia urazów podczas wprowadzania rurki.",
             action: "Rokuronium", 
             options: ["Sukcynylocholina", "Rokuronium", "Wekuronium", "Etomidat"], 
             needsDose: true, 
@@ -120,19 +131,24 @@
         },
         { 
             title: "6. Placement with proof", 
-            description: "Umieszczenie i weryfikacja. Wprowadzenie rurki intubacyjnej z użyciem laryngoskopu. Złotym standardem potwierdzenia prawidłowego położenia rurki w tchawicy jest kapnografia (EtCO2).",
+            description: "Wprowadzenie rurki do tchawicy i weryfikacja jej położenia za pomocą metod obiektywnych.",
             action: "Intubacja i EtCO2", 
             options: ["Kontynuacja sedacji", "Intubacja i EtCO2", "Dostęp IV", "Podanie Atropiny"], 
             needsDose: false 
         },
         { 
             title: "7. Post-intubation management", 
-            description: "Opieka po intubacji. Zabezpieczenie rurki intubacyjnej, wdrożenie wentylacji mechanicznej oraz podłączenie ciągłego wlewu leków sedacyjnych i przeciwbólowych.",
+            description: "Utrzymanie stabilności pacjenta po zabiegu, wdrożenie docelowej wentylacji oraz odpowiedniego nadzoru.",
             action: "Sedacja i wentylacja", 
             options: ["Tlen 100% (3-5 min)", "Rozkurcz oskrzeli", "Sedacja i wentylacja", "Ekstubacja"], 
             needsDose: false 
         }
     ];
+
+    function toggleCheatSheet() {
+        const cs = document.getElementById('cheat-sheet');
+        cs.style.display = cs.style.display === 'block' ? 'none' : 'block';
+    }
 
     function startTraining() {
         weight = parseFloat(document.getElementById('weight').value);
@@ -146,12 +162,10 @@
         document.getElementById('step-label').innerText = `Krok ${currentStep + 1} z ${protocol.length}`;
         document.getElementById('step-title').innerText = step.title;
         document.getElementById('step-description').innerText = step.description;
-        document.getElementById('step-instruction').innerText = "Wybierz właściwe działanie:";
         document.getElementById('progress').style.width = `${(currentStep / protocol.length) * 100}%`;
         
         const container = document.getElementById('options-container');
         container.innerHTML = '';
-
         step.options.forEach(choice => {
             const btn = document.createElement('button');
             btn.innerText = choice;
@@ -170,28 +184,23 @@
             }
         } else {
             mistakes++;
-            alert("BŁĄD! Pamiętaj o właściwej kolejności protokołu 7P.");
+            alert("BŁĄD! Wybrano niewłaściwe działanie dla tego etapu.");
         }
     }
 
     function loadDoseStage(step) {
-        document.getElementById('step-instruction').innerText = `Wybierz prawidłową dawkę dla leku: ${step.action} (waga: ${weight} kg)`;
+        document.getElementById('step-description').innerText = `Wybrano: ${step.action}. Teraz wylicz dawkę dla pacjenta o wadze ${weight} kg.`;
         const container = document.getElementById('options-container');
         container.innerHTML = '';
 
         step.doseMultipliers.forEach(mult => {
             const doseVal = parseFloat((mult * weight).toFixed(3));
             const correctVal = parseFloat((step.correctMultiplier * weight).toFixed(3));
-
             const btn = document.createElement('button');
             btn.innerText = `${doseVal} ${step.unit}`;
             btn.onclick = () => {
-                if(doseVal === correctVal) {
-                    nextStep();
-                } else { 
-                    mistakes++; 
-                    alert(`Zła dawka! Prawidłowa dla pacjenta ${weight} kg to ${correctVal} ${step.unit}`); 
-                }
+                if(doseVal === correctVal) nextStep();
+                else { mistakes++; alert(`Zła dawka!`); }
             };
             container.appendChild(btn);
         });
@@ -199,21 +208,15 @@
 
     function nextStep() {
         currentStep++;
-        if (currentStep < protocol.length) {
-            loadStep();
-        } else {
-            showSummary();
-        }
+        if (currentStep < protocol.length) loadStep();
+        else showSummary();
     }
 
     function showSummary() {
         document.getElementById('progress').style.width = `100%`;
         document.getElementById('game').classList.remove('active');
         document.getElementById('summary').classList.add('active');
-        
-        const statsEl = document.getElementById('summary-stats');
-        statsEl.innerText = `Liczba błędów: ${mistakes}`;
-        statsEl.style.color = mistakes === 0 ? "var(--success)" : "var(--error)";
+        document.getElementById('summary-stats').innerText = `Błędy: ${mistakes}`;
     }
 </script>
 
