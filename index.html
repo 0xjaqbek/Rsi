@@ -8,11 +8,13 @@
 <body>
   <main>
     <h1>RSI Trainer</h1>
+    <p>Ćwiczenie kolejności działań i dawek leków w RSI.</p>
 
     <section>
-      <button id="nextCaseBtn">Następny przypadek</button>
-      <button id="showAnswerBtn">Pokaż odpowiedź</button>
-      <button id="resetBtn">Reset</button>
+      <button id="nextCaseBtn" type="button">Następny przypadek</button>
+      <button id="modeBtn" type="button">Tryb: nauka/egzamin</button>
+      <button id="showAnswerBtn" type="button">Pokaż odpowiedź</button>
+      <button id="resetBtn" type="button">Reset</button>
     </section>
 
     <section>
@@ -22,13 +24,15 @@
 
     <section>
       <h2>Kolejność działań</h2>
-      <ol id="stepList"></ol>
-      <button id="checkStepsBtn">Sprawdź kolejność</button>
+      <p>Klikaj czynności z listy poniżej, żeby zbudować sekwencję.</p>
+      <div id="stepList"></div>
+      <button id="checkStepsBtn" type="button">Sprawdź kolejność</button>
       <div id="stepResult"></div>
     </section>
 
     <section>
-      <h2>Leki i dawki</h2>
+      <h2>Dostępne leki</h2>
+      <p>Wpisz dawkę dla każdego leku.</p>
       <form id="drugForm"></form>
       <button id="checkDrugsBtn" type="button">Sprawdź dawki</button>
       <div id="drugResult"></div>
